@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <title>Hôm nay ăn gì? - Random món ăn</title>
+  <!-- Bootstrap 5 CSS + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --bg-overlay: rgba(15, 17, 20, 0.62);
+      --surface: rgba(255, 255, 255, 0.96);
+      --surface-soft: #f9f6f3;
+      --accent: #e94e1b;
+      --accent-dark: #c33d13;
+      --accent-soft: #fff1ea;
+      --text-dark: #1f1f1f;
+      --text-muted: #5b5b5b;
+      --star: #f7b731;
+      --shadow-lg: 0 18px 45px rgba(0, 0, 0, 0.22);
+      --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.14);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url('https://mir-s3-cdn-cf.behance.net/project_modules/1400_opt_1/58ba7076130917.5e9193d785339.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      color: var(--text-dark);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: var(--bg-overlay);
+      z-index: 0;
+    }
+
+    .site-header {
+      position: relative;
+      z-index: 10;
+      background: rgba(17, 18, 20, 0.9);
+      backdrop-filter: blur(8px);
+      border-bottom: 3px solid var(--accent);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .navbar {
+      padding: 0.9rem 0;
+    }
+
+    .navbar-brand {
+      font-weight: 800; 
+      /* font-weight là độ đậm của chữ */
+      font-size: 1.5rem;
+      color: #fff !important;
+      letter-spacing: 0.02em;
+    }
+
+    .navbar-brand span {
+      color: var(--accent);
+    }
+
+    .nav-link {
+      color: #d7d7d7 !important;
+      font-weight: 600;
+      padding: 0.55rem 1rem !important;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--accent) !important;
+    }
+
+    .main-content {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      padding: 2.5rem 1rem 3rem;
+    }
+
+    .food-card {
+      border-radius: 26px;
+      background: var(--surface);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.24s ease, box-shadow 0.24s ease;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .food-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.26);
+    }
+
+    .food-image {
+      position: relative;
+      background: linear-gradient(135deg, #f6f2ef, #efeae6);
+      max-height: 420px;
+      overflow: hidden;
+    }
+
+    .food-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.12), transparent 30%);
+      pointer-events: none;
+    }
+
+    .food-image img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .food-card:hover .food-image img {
+      transform: scale(1.04);
+    }
+
+    .btn-random {
+      background: linear-gradient(135deg, var(--accent), #f66d3d);
+      color: #fff;
+      border: none;
+      padding: 0.9rem 2.1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 12px 25px rgba(233, 78, 27, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    .btn-random:hover {
+      background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+      transform: translateY(-2px);
+      box-shadow: 0 18px 28px rgba(233, 78, 27, 0.42);
+    }
+
+    .btn-random:active {
+      transform: translateY(0);
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--accent-soft);
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color: #5a2b1a;
+      font-weight: 600;
+      margin: 0.15rem;
+    }
+
+    .price {
+      background: linear-gradient(135deg, var(--accent), #fb8b4d);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      box-shadow: 0 6px 18px rgba(233, 78, 27, 0.25);
+    }
+
+    .stars {
+      color: var(--star);
+      font-size: 1.5rem;
+      letter-spacing: 0.12rem;
+      text-shadow: 0 2px 8px rgba(247, 183, 49, 0.15);
+    }
+
+    .location-box {
+      background: linear-gradient(135deg, #fffaf8, #f4f4f4);
+      border-left: 5px solid var(--accent);
+      padding: 1rem 1.1rem;
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .comment-box {
+      background: linear-gradient(135deg, #fff, #f7f7f7);
+      padding: 0.9rem 1rem;
+      border-radius: 14px;
+      margin-bottom: 0.9rem;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .site-footer {
+      position: relative;
+      z-index: 10;
+      background: rgba(17, 18, 20, 0.96);
+      color: #aaa;
+      padding: 2.5rem 0 1.25rem;
+      margin-top: auto;
+    }
+
+    .site-footer h5 {
+      color: #fff;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .site-footer a {
+      color: #aaa;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .site-footer a:hover {
+      color: var(--accent);
+    }
+
+    .copyright {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 1.8rem;
+      padding-top: 1.2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #c0c0c0;
+    }
+  
+    .filter-panel .btn-check:checked + .btn { box-shadow: 0 0 0 3px rgba(233, 78, 27, 0.18); }
+    .recipe-box { max-height: 320px; overflow: auto; font-size: 0.92rem; }
+  
+    .time-chip { border: 0; background: var(--accent-soft); color: var(--accent-dark); font-weight: 700; border-radius: 999px; padding: 0.1rem 0.65rem; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; }
+    .time-chip:hover { background: var(--accent); color: #fff; }
+    #timerDock { position: fixed; left: 50%; transform: translateX(-50%); bottom: 14px; z-index: 2000; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; max-width: 96vw; }
+    .timer-card { background: rgba(17, 18, 20, 0.95); color: #fff; border-radius: 18px; padding: 0.6rem 0.9rem; box-shadow: var(--shadow-lg); min-width: 170px; text-align: center; }
+    .timer-card.done { background: var(--accent); }
+    .timer-card .t-label { font-size: 0.78rem; opacity: 0.8; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .timer-card .t-time { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .timer-card button { border: 0; background: rgba(255, 255, 255, 0.15); color: #fff; border-radius: 999px; padding: 0.15rem 0.7rem; margin: 0 0.15rem; }
+    .timer-card button:hover { background: rgba(255, 255, 255, 0.3); }
+  </style>
+</head>
+<body>
+
+
+  <!-- Header -->
+  <header class="site-header">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          🍜 <span>Food</span>Random
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="#">Trang chủ</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Công thức</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Địa điểm</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Giới thiệu</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+          <!-- Tiêu đề -->
+          <div class="text-center mb-4">
+            <h2 class="text-white fw-bold">Hôm nay ăn gì?</h2>
+            <p class="text-light">Bấm nút bên dưới để tìm món ngay</p>
+          </div>
+
+          <!-- Tìm món -->
+          <form id="searchForm" class="input-group mb-3" role="search">
+            <input id="searchInput" class="form-control form-control-lg" type="search" placeholder="Tìm món hoặc nguyên liệu: gà, tôm, curry, soup…" aria-label="Tìm món ăn">
+            <button class="btn btn-danger px-4" type="submit" id="searchBtn">🔍 Tìm</button>
+          </form>
+          <div id="searchResults" class="hidden mb-4"></div>
+
+          <!-- Bộ lọc dị ứng / kiêng cữ -->
+          <div class="text-center mb-3">
+            <button class="btn btn-light rounded-pill fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+              🩺 Dị ứng &amp; kiêng cữ <span id="filterCount" class="badge bg-danger ms-1">0</span>
+            </button>
+          </div>
+          <div class="collapse mb-4" id="filterPanel">
+            <div class="bg-white rounded-4 p-4 filter-panel">
+              <div id="filterGroups"></div>
+              <div class="row g-2">
+                <div class="col-md-5">
+                  <label class="form-label fw-semibold small" for="areaSel">🌏 Ẩm thực</label>
+                  <select id="areaSel" class="form-select"></select>
+                </div>
+                <div class="col-md-7">
+                  <label class="form-label fw-semibold small" for="customAvoid">🚫 Nguyên liệu khác muốn tránh</label>
+                  <input id="customAvoid" class="form-control" placeholder="vd: tôm, nấm, mushroom (cách nhau bằng dấu phẩy)">
+                </div>
+              </div>
+              <button id="clearFilters" type="button" class="btn btn-link btn-sm mt-2 p-0">Xóa bộ lọc</button>
+              <p class="text-muted small mb-0 mt-2">Bộ lọc chỉ dựa trên danh sách nguyên liệu của công thức, chỉ mang tính tham khảo.</p>
+            </div>
+          </div>
+
+          <!-- Nút random -->
+          <div class="text-center mb-4">
+            <button class="btn-random" id="randomBtn">
+              🔀 Random món ăn
+            </button>
+          </div>
+
+          <!-- Thông báo ban đầu -->
+          <div id="startMsg" class="text-center bg-white p-5 rounded-4">
+            <p class="text-muted mb-0 fs-5">👆 Bấm nút ở trên để bắt đầu nhé!</p>
+          </div>
+
+          <!-- Card món ăn -->
+          <div id="foodCard" class="food-card hidden">
+            <div class="food-image">
+              <img id="foodImg" src="" alt="Hình ảnh món ăn">
+            </div>
+            <div class="p-4 text-center">
+              <h3 id="foodName" class="fw-bold mb-3">Tên món</h3>
+              <div id="foodTags" class="mb-3"></div>
+              <p class="text-muted small">👆 Bấm vào đây để xem chi tiết</p>
+            </div>
+          </div>
+
+          <!-- Chi tiết món ăn -->
+          <div id="foodDetail" class="hidden mt-4 bg-white p-4 rounded-4">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <h5>📋 Nguyên liệu</h5>
+                <div id="ingredients" class="d-flex flex-wrap gap-1"></div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <h5>📝 Cách làm</h5>
+                <div id="recipe" class="bg-light p-3 rounded-3 recipe-box"></div>
+              </div>
+            </div>
+            <hr>
+            <div id="linksBox" class="d-flex flex-wrap gap-2 mb-3"></div>
+            <div class="alert alert-warning small mb-0" role="alert">
+              ⚠️ Nếu bạn dị ứng nặng hoặc đang điều trị bệnh, hãy kiểm tra lại nguyên liệu (nhất là nước sốt, gia vị) và hỏi bác sĩ hoặc chuyên gia dinh dưỡng.
+            </div>
+            <details id="iosHelp" class="small mt-3 hidden">
+              <summary class="fw-semibold">📲 Đặt hẹn giờ vào đồng hồ iPhone (cài 1 lần)</summary>
+              <ol class="mt-2 mb-0 ps-3">
+                <li>Mở app <b>Phím tắt (Shortcuts)</b>, bấm <b>+</b> để tạo phím tắt mới.</li>
+                <li>Đặt tên đúng là <b>HenGio</b>.</li>
+                <li>Thêm hành động <b>Lấy số từ đầu vào (Get Numbers from Input)</b>.</li>
+                <li>Thêm hành động <b>Bắt đầu hẹn giờ (Start Timer)</b>, đổi đơn vị thành <b>giây</b> và chọn biến <b>Số</b> ở bước trước.</li>
+                <li>Lưu lại. Từ giờ bấm <b>📲 Đồng hồ máy</b> trên thẻ đếm ngược là iPhone tự hẹn giờ trong app Đồng hồ.</li>
+              </ol>
+            </details>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-5 mb-4">
+          <h5>FoodRandom</h5>
+          <p>Trang web nhỏ giúp bạn tìm món ăn mỗi ngày. Có kèm công thức, địa điểm và đánh giá để bạn tham khảo.</p>
+          <p>Hy vọng bạn không còn phải đau đầu nghĩ "hôm nay ăn gì" nữa 😄</p>
+        </div>
+        <div class="col-md-3 mb-4">
+          <h5>Liên kết</h5>
+          <ul class="list-unstyled">
+            <li><a href="#">Trang chủ</a></li>
+            <li><a href="#">Tất cả món</a></li>
+            <li><a href="#">Địa điểm ăn uống</a></li>
+            <li><a href="#">Góp ý</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4 mb-4">
+          <h5>Người làm</h5>
+          <p>Tôi là <strong style="color:#e94e1b;">Nguyễn Trần Minh Quân</strong>, làm web này vì sở thích ăn uống và học code.</p>
+          <p>Liên hệ: <a href="mailto:minhquaan347@gmail.com">minhquaan347@gmail.com</a></p>
+          <p>GitHub: <a href="https://github.com/minhquaan347" target="_blank">github.com/minhquaan347</a></p>
+        </div>
+      </div>
+      <div class="copyright">
+        © 2026 FoodRandom - Làm vì đam mê ẩm thực 🍜
+      </div>
+    </div>
+  </footer>
+
+  <div id="timerDock" aria-live="polite"></div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Dữ liệu món ăn lấy từ TheMealDB (miễn phí, không cần key)
+    const API = 'https://www.themealdb.com/api/json/v1/1/';
+
+    const FISH = 'fish,salmon,tuna,cod,anchovy,anchovies,mackerel,haddock,sardine,pollock,trout,herring,snapper,tilapia,sea bass,kipper,mullet,swordfish,worcestershire';
+    const SHELL = 'shrimp,prawn,crab,lobster,clam,mussel,oyster,scallop,squid,calamari,octopus,crayfish,langoustine,cockle,seafood';
+    const MEAT = 'beef,steak,mince,chicken,pork,bacon,ham,sausage,lamb,mutton,veal,turkey,duck,goat,chorizo,prosciutto,salami,pancetta,gammon,venison,rabbit,gelatine,lard,suet,pepperoni,oxtail,brisket,ribs';
+    const PORK = 'pork,bacon,ham,sausage,chorizo,prosciutto,salami,pancetta,gammon,lard,pepperoni';
+    const DAIRY = 'milk,cream,cheese,butter,yogurt,yoghurt,parmesan,mozzarella,cheddar,ghee,feta,ricotta,mascarpone,custard,whey,paneer,halloumi,gruyere,brie,creme fraiche';
+    const SPICY = 'chilli,chili,chillies,chilies,cayenne,jalapeno,habanero,scotch bonnet,tabasco,harissa,sriracha,sambal,gochujang,pepper flakes,curry paste';
+    const ALCOHOL = 'wine,beer,rum,brandy,whisky,whiskey,vodka,sherry,cider,mirin,sake,liqueur,marsala,bourbon,champagne,prosecco,cognac,tequila,lager,stout,ale,gin';
+
+    // Cụm từ KHÔNG tính là chất cần tránh (vd: sữa dừa không phải sữa bò)
+    const SAFE_DAIRY = /\b(?:coconut|almond|soy|soya|oat|rice|cashew) (?:milk|cream|butter)\b|\bpeanut butter\b|\bcocoa butter\b|\bcream of tartar\b/g;
+    const SAFE_GLUTEN = /\b(?:rice|corn|potato|almond|coconut|gram|chickpea|tapioca|buckwheat|cassava) (?:flour|noodles?|vermicelli)\b|\bcornflour\b|\bglass noodles?\b/g;
+    const SAFE_ALC = /\bginger (?:ale|beer)\b|\bwine vinegar\b/g;
+    const MEAT_CATS = ['Beef', 'Chicken', 'Lamb', 'Pork', 'Seafood', 'Goat'];
+
+    const GROUPS = [
+      { title: '⚠️ Dị ứng với', style: 'danger', items: {
+        peanut:    { l: 'Đậu phộng', kw: 'peanut,groundnut' },
+        treenut:   { l: 'Hạt cây (hạnh nhân, óc chó, điều…)', kw: 'almond,walnut,cashew,hazelnut,pistachio,pecan,macadamia,pine nut,marzipan' },
+        shellfish: { l: 'Tôm, cua, sò, mực…', kw: SHELL },
+        fish:      { l: 'Cá', kw: FISH },
+        egg:       { l: 'Trứng', kw: 'egg,mayonnaise,mayo,yolk,meringue' },
+        dairy:     { l: 'Sữa & chế phẩm', kw: DAIRY, safe: SAFE_DAIRY },
+        gluten:    { l: 'Gluten (bột mì, mì, bánh mì…)', kw: 'flour,bread,breadcrumb,pasta,spaghetti,noodle,couscous,barley,wheat,bulgur,semolina,pastry,filo,phyllo,rye,lasagne,macaroni,penne,fettuccine,linguine,tagliatelle,biscuit,cracker,panko,wonton,pita,naan,baguette,bun,brioche,dough,soy sauce,seitan,croissant', safe: SAFE_GLUTEN },
+        soy:       { l: 'Đậu nành', kw: 'soy,soya,tofu,miso,edamame,tempeh' },
+        sesame:    { l: 'Mè (vừng)', kw: 'sesame,tahini' }
+      }},
+      { title: '🥗 Chế độ ăn / kiêng', style: 'success', items: {
+        veg:     { l: 'Ăn chay', kw: [MEAT, FISH, SHELL].join(','), cats: MEAT_CATS },
+        vegan:   { l: 'Thuần chay', kw: [MEAT, FISH, SHELL, DAIRY, 'egg,mayonnaise,yolk,honey'].join(','), cats: MEAT_CATS, safe: SAFE_DAIRY },
+        nopork:  { l: 'Không thịt heo', kw: PORK, cats: ['Pork'] },
+        noalc:   { l: 'Không rượu bia', kw: ALCOHOL, safe: SAFE_ALC },
+        nospicy: { l: 'Không cay', kw: SPICY }
+      }},
+      { title: '❤️ Tình trạng sức khỏe (kiêng)', style: 'primary', items: {
+        diabetes: { l: 'Tiểu đường (hạn chế đường)', kw: 'sugar,honey,syrup,molasses,jam,jelly,chocolate,caramel,marmalade,sweetened,candied,treacle,marshmallow,custard', cats: ['Dessert'] },
+        gout:     { l: 'Gút (hạn chế purin)', kw: 'liver,kidney,tripe,sweetbread,anchovy,anchovies,sardine,mackerel,herring,scallop,mussel,shrimp,prawn,crab,lobster,clam,oyster,trout,tuna,beer,ale,stout,lager' },
+        bp:       { l: 'Huyết áp cao (hạn chế mặn)', kw: 'soy sauce,fish sauce,oyster sauce,bacon,ham,sausage,chorizo,salami,pancetta,prosciutto,anchovy,anchovies,olive,caper,stock cube,bouillon,worcestershire,miso,pickle,gherkin,salted,cured,parmesan,feta,halloumi,kimchi,brine,hoisin,teriyaki', safe: /\bolive oil\b/g },
+        heart:    { l: 'Mỡ máu / tim mạch', kw: 'bacon,lard,suet,butter,cream,sausage,chorizo,salami,pancetta,ghee,mayonnaise,pork belly,duck fat,goose fat,cheese,liver,kidney', safe: SAFE_DAIRY },
+        stomach:  { l: 'Dạ dày / trào ngược', kw: SPICY + ',vinegar,tomato,coffee,wine', safe: /\bwine vinegar\b/g }
+      }}
+    ];
+
+    const VN = { 'tôm': 'shrimp', 'cua': 'crab', 'mực': 'squid', 'cá': 'fish', 'bò': 'beef', 'thịt bò': 'beef', 'heo': 'pork', 'lợn': 'pork', 'thịt heo': 'pork', 'gà': 'chicken', 'vịt': 'duck', 'trứng': 'egg', 'sữa': 'milk', 'nấm': 'mushroom', 'hành': 'onion', 'tỏi': 'garlic', 'cà chua': 'tomato', 'khoai tây': 'potato', 'đậu': 'bean', 'dừa': 'coconut', 'gừng': 'ginger', 'sả': 'lemongrass', 'cà rốt': 'carrot' };
+    const CAT_VN = { Beef: 'Bò', Chicken: 'Gà', Dessert: 'Tráng miệng', Lamb: 'Cừu', Miscellaneous: 'Khác', Pasta: 'Mì Ý', Pork: 'Heo', Seafood: 'Hải sản', Side: 'Ăn kèm', Starter: 'Khai vị', Vegan: 'Thuần chay', Vegetarian: 'Ăn chay', Breakfast: 'Bữa sáng', Goat: 'Dê' };
+    const AREA_VN = { Vietnamese: 'Việt Nam', Japanese: 'Nhật Bản', Chinese: 'Trung Quốc', Thai: 'Thái Lan', Malaysian: 'Malaysia', Indian: 'Ấn Độ', Italian: 'Ý', French: 'Pháp', American: 'Mỹ', Mexican: 'Mexico' };
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    // Tạo regex khớp nguyên từ (egg không khớp eggplant), cho phép số nhiều
+    const mk = kw => new RegExp('\\b(?:' + kw.split(',').map(k => k.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')(?:s|es)?\\b', 'i');
+
+    const ALL = {};
+    GROUPS.forEach(g => Object.entries(g.items).forEach(([k, r]) => { r.re = mk(r.kw); ALL[k] = r; }));
+
+    $('filterGroups').innerHTML = GROUPS.map(g => `
+      <div class="mb-3">
+        <div class="fw-semibold mb-2">${g.title}</div>
+        <div class="d-flex flex-wrap gap-2">${Object.entries(g.items).map(([k, r]) =>
+          `<input type="checkbox" class="btn-check filter-cb" id="f-${k}" value="${k}" autocomplete="off">
+           <label class="btn btn-outline-${g.style} btn-sm rounded-pill" for="f-${k}">${r.l}</label>`).join('')}
+        </div>
+      </div>`).join('');
+    $('areaSel').innerHTML = '<option value="">Tất cả các nước</option>' +
+      Object.entries(AREA_VN).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+
+    function getRules() {
+      const rules = [...document.querySelectorAll('.filter-cb:checked')].map(c => ALL[c.value]);
+      const terms = $('customAvoid').value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean).map(s => VN[s] || s);
+      if (terms.length) rules.push({ l: 'Tránh: ' + terms.join(', '), re: mk(terms.join(',')) });
+      return rules;
+    }
+
+    function saveFilters() {
+      $('filterCount').textContent = getRules().length;
+      try {
+        localStorage.setItem('foodFilters', JSON.stringify({
+          k: [...document.querySelectorAll('.filter-cb:checked')].map(c => c.value),
+          a: $('areaSel').value, c: $('customAvoid').value
+        }));
+      } catch (e) { /* bỏ qua nếu trình duyệt chặn lưu */ }
+    }
+
+    function loadFilters() {
+      try {
+        const s = JSON.parse(localStorage.getItem('foodFilters') || 'null');
+        if (!s) return;
+        s.k.forEach(k => { const e = $('f-' + k); if (e) e.checked = true; });
+        $('areaSel').value = s.a || '';
+        $('customAvoid').value = s.c || '';
+      } catch (e) { /* bỏ qua */ }
+      $('filterCount').textContent = getRules().length;
+    }
+
+    $('filterPanel').addEventListener('change', saveFilters);
+    $('customAvoid').addEventListener('input', saveFilters);
+    $('clearFilters').addEventListener('click', () => {
+      document.querySelectorAll('.filter-cb').forEach(c => c.checked = false);
+      $('areaSel').value = ''; $('customAvoid').value = '';
+      saveFilters();
+    });
+    loadFilters();
+
+    // ---- Gọi API ----
+    const get = async u => { const r = await fetch(API + u); if (!r.ok) throw new Error(r.status); return r.json(); };
+    const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]);
+    const seen = new Set();
+    const areaCache = {};
+
+    async function fetchBatch(area, n = 8) {
+      if (area) {
+        if (!areaCache[area]) areaCache[area] = (await get('filter.php?a=' + area)).meals || [];
+        let pool = areaCache[area].filter(m => !seen.has(m.idMeal));
+        if (!pool.length) { seen.clear(); pool = areaCache[area]; }
+        const ids = shuffle(pool).slice(0, n).map(m => m.idMeal);
+        return (await Promise.all(ids.map(id => get('lookup.php?i=' + id)))).map(d => d.meals && d.meals[0]).filter(Boolean);
+      }
+      return (await Promise.all(Array.from({ length: n }, () => get('random.php')))).map(d => d.meals[0]);
+    }
+
+    function parse(m) {
+      const ings = [];
+      for (let i = 1; i <= 20; i++) {
+        const name = (m['strIngredient' + i] || '').trim();
+        if (name) ings.push({ name, measure: (m['strMeasure' + i] || '').trim() });
+      }
+      return { id: m.idMeal, name: m.strMeal, img: m.strMealThumb, cat: m.strCategory, area: m.strArea,
+               tags: m.strTags ? m.strTags.split(',') : [], ings, recipe: m.strInstructions || '', yt: m.strYoutube, src: m.strSource };
+    }
+
+    function violations(meal, rules) {
+      const bad = [];
+      for (const r of rules) {
+        if (r.cats && r.cats.includes(meal.cat)) { bad.push(r.l); continue; }
+        if (meal.ings.some(i => { let s = i.name.toLowerCase(); if (r.safe) s = s.replace(r.safe, ' '); return r.re.test(s); })) bad.push(r.l);
+      }
+      return bad;
+    }
+
+    async function findMeal() {
+      const rules = getRules(), area = $('areaSel').value;
+      for (let i = 0; i < 6; i++) {
+        for (const m of await fetchBatch(area)) {
+          if (seen.has(m.idMeal)) continue;
+          seen.add(m.idMeal);
+          const meal = parse(m);
+          if (!violations(meal, rules).length) return meal;
+        }
+      }
+      return null;
+    }
+
+    // ---- Hiển thị ----
+    let currentFood = null;
+    const randomBtn = $('randomBtn'), startMsg = $('startMsg'), foodCard = $('foodCard'), foodDetail = $('foodDetail');
+
+    function msg(text) {
+      startMsg.innerHTML = `<p class="text-muted mb-0 fs-5">${text}</p>`;
+      startMsg.classList.remove('hidden');
+      foodCard.classList.add('hidden');
+      foodDetail.classList.add('hidden');
+    }
+
+    function showFood(f) {
+      currentFood = f;
+      $('foodImg').src = f.img;
+      $('foodName').textContent = f.name;
+      const tags = [CAT_VN[f.cat] || f.cat, AREA_VN[f.area] || f.area, ...f.tags].filter(Boolean);
+      $('foodTags').innerHTML = tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') +
+        (getRules().length ? '<span class="tag" style="background:#e7f6ec;color:#1b6b3a">✅ Phù hợp bộ lọc của bạn</span>' : '');
+      startMsg.classList.add('hidden');
+      foodCard.classList.remove('hidden');
+      foodDetail.classList.add('hidden');
+    }
+
+    // ---- Dịch sang tiếng Việt ----
+    // Dịch bằng endpoint gtx của Google Translate (không cần key, không chính thức)
+    async function tr(q) {
+      const r = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t', {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: new URLSearchParams({ q })
+      });
+      if (!r.ok) throw new Error(r.status);
+      return (await r.json())[0].map(s => s[0]).join('');
+    }
+
+    async function translateMeal(f, steps) {
+      const [name, ings, ...st] = await Promise.all([
+        tr(f.name), tr(f.ings.map(i => i.name).join('\n')), ...steps.map(s => tr(s).catch(() => s))
+      ]);
+      const il = ings.split('\n').map(s => s.trim());
+      return { name: name.trim(), ings: il.length === f.ings.length ? il : null, steps: st.map(s => s.trim()) };
+    }
+
+    // ---- Nhận diện thời gian trong công thức ----
+    const TIME_RE = /(\d+(?:[.,]\d+)?)(?:\s*(?:-|–|—|đến|to|or|hoặc)\s*(\d+(?:[.,]\d+)?))?\s*(giờ|tiếng|phút|giây|hours?|hrs?|minutes?|mins?|seconds?|secs?)(?!\p{L})/giu;
+
+    function withTimers(s) {
+      let out = '', last = 0;
+      for (const m of s.matchAll(TIME_RE)) {
+        const n = parseFloat((m[2] || m[1]).replace(',', '.')), u = m[3].toLowerCase();
+        const sec = Math.round(n * (/^(giờ|tiếng|h)/.test(u) ? 3600 : /^(phút|m)/.test(u) ? 60 : 1));
+        out += esc(s.slice(last, m.index)) +
+          `<button type="button" class="time-chip" data-sec="${sec}" data-label="${esc(m[0])}" title="Bấm để đếm ngược">⏱ ${esc(m[0])}</button>`;
+        last = m.index + m[0].length;
+      }
+      return out + esc(s.slice(last));
+    }
+
+    // ---- Đếm ngược ----
+    const timers = []; let timerId = 0, audio;
+    const fmt = ms => { const s = Math.ceil(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+      return (h ? h + ':' + String(m).padStart(2, '0') : String(m).padStart(2, '0')) + ':' + String(x).padStart(2, '0'); };
+
+    function getAudio() { try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) {} return audio; }
+    function beep() {
+      const a = getAudio();
+      if (a) [0, 0.35, 0.7].forEach(d => { const o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination);
+        o.frequency.value = 880; g.gain.value = 0.2; o.start(a.currentTime + d); o.stop(a.currentTime + d + 0.2); });
+      if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+    }
+
+    // ---- Hẹn giờ ngay trên điện thoại ----
+    const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const ANDROID = /Android/.test(navigator.userAgent);
+    const NATIVE = IOS || ANDROID;
+    const SHORTCUT_NAME = 'HenGio'; // phải trùng tên phím tắt trong app Phím tắt
+    if (IOS) $('iosHelp').classList.remove('hidden');
+
+    function nativeTimer(t) {
+      const sec = Math.max(1, Math.ceil((t.paused ? t.left : t.end - Date.now()) / 1000));
+      const name = encodeURIComponent(t.label);
+      if (!t.native) { t.native = true; t.label = '📲 ' + t.label; }
+      location.href = IOS
+        ? `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT_NAME)}&input=text&text=${sec}`
+        : `intent:#Intent;action=android.intent.action.SET_TIMER;i.android.intent.extra.alarm.LENGTH=${sec};S.android.intent.extra.alarm.MESSAGE=${name};B.android.intent.extra.alarm.SKIP_UI=true;end`;
+    }
+
+    // Giữ màn hình sáng khi đang có đồng hồ chạy (điện thoại khóa màn hình sẽ làm trang ngừng chạy)
+    let wake = null;
+    async function updateWake() {
+      const need = timers.some(t => !t.done && !t.paused);
+      try {
+        if (need && !wake && navigator.wakeLock) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); }
+        else if (!need && wake) { await wake.release(); wake = null; }
+      } catch (e) { /* trình duyệt không hỗ trợ */ }
+    }
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') updateWake(); });
+
+    function renderDock() {
+      updateWake();
+      $('timerDock').innerHTML = timers.map(t => `
+        <div class="timer-card ${t.done ? 'done' : ''}" data-id="${t.id}">
+          <div class="t-label">${esc(t.label)}</div>
+          <div class="t-time" id="t-${t.id}">${t.done ? 'Hết giờ!' : fmt(t.paused ? t.left : t.end - Date.now())}</div>
+          <div>${t.done ? '' : `<button data-act="pause" aria-label="Tạm dừng hoặc tiếp tục">${t.paused ? '▶' : '⏸'}</button><button data-act="add">+1 phút</button>${NATIVE ? '<button data-act="native">📲 Đồng hồ máy</button>' : ''}`}<button data-act="x" aria-label="Đóng">✕</button></div>
+        </div>`).join('');
+    }
+
+    setInterval(() => {
+      let changed = false;
+      timers.forEach(t => {
+        if (t.paused || t.done) return;
+        const left = t.end - Date.now();
+        if (left <= 0) { t.done = true; changed = true; if (!t.native) beep(); }
+        else { const el = $('t-' + t.id); if (el) el.textContent = fmt(left); }
+      });
+      if (changed) renderDock();
+    }, 250);
+
+    $('timerDock').addEventListener('click', e => {
+      const b = e.target.closest('button'), card = e.target.closest('.timer-card');
+      if (!b || !card) return;
+      const i = timers.findIndex(t => t.id === +card.dataset.id), t = timers[i];
+      if (b.dataset.act === 'native') nativeTimer(t);
+      else if (b.dataset.act === 'x') timers.splice(i, 1);
+      else if (b.dataset.act === 'add') { if (t.paused) t.left += 60000; else t.end += 60000; }
+      else if (b.dataset.act === 'pause') { if (t.paused) { t.end = Date.now() + t.left; t.paused = false; } else { t.left = t.end - Date.now(); t.paused = true; } }
+      renderDock();
+    });
+
+    foodDetail.addEventListener('click', e => {
+      const c = e.target.closest('.time-chip');
+      if (!c) return;
+      getAudio(); // cần thao tác của người dùng để bật âm thanh
+      timers.push({ id: ++timerId, label: c.dataset.label + ' · ' + (currentFood ? currentFood.name : ''), end: Date.now() + c.dataset.sec * 1000, left: 0, paused: false, done: false });
+      renderDock();
+    });
+
+    // ---- Video tiếng Việt ----
+    // Muốn nhúng video tiếng Việt ngay trong trang: dán YouTube Data API key vào đây.
+    const YT_KEY = '';
+
+    async function loadVideos(f, viName) {
+      const q = 'cách nấu ' + viName, box = $('linksBox');
+      const links =
+        `<a class="btn btn-danger btn-sm rounded-pill" href="https://www.youtube.com/results?search_query=${encodeURIComponent(q)}" target="_blank" rel="noopener">▶️ Xem video tiếng Việt trên YouTube</a>` +
+        (/^https:\/\//.test(f.yt || '') ? `<a class="btn btn-outline-secondary btn-sm rounded-pill" href="${esc(f.yt)}" target="_blank" rel="noopener">Video gốc (tiếng Anh)</a>` : '') +
+        (/^https?:\/\//.test(f.src || '') ? `<a class="btn btn-outline-secondary btn-sm rounded-pill" href="${esc(f.src)}" target="_blank" rel="noopener">🔗 Nguồn công thức</a>` : '');
+      box.innerHTML = links;
+      if (!YT_KEY) return;
+      try {
+        const d = await (await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&videoEmbeddable=true&relevanceLanguage=vi&regionCode=VN&q=${encodeURIComponent(q)}&key=${YT_KEY}`)).json();
+        const id = d.items && d.items[0] && d.items[0].id.videoId;
+        if (id && currentFood === f) box.innerHTML = `<div class="ratio ratio-16x9 w-100"><iframe src="https://www.youtube-nocookie.com/embed/${esc(id)}" title="Video hướng dẫn" allowfullscreen></iframe></div>` + links;
+      } catch (e) { /* giữ nguyên các link */ }
+    }
+
+    // ---- Chi tiết món ----
+    async function showDetail(f) {
+      const steps = f.recipe.split(/\r?\n+/).map(s => s.trim()).filter(s => s && !/^(step\s*)?\d+\.?$/i.test(s));
+      const render = (v, note) => {
+        $('foodName').innerHTML = v ? `${esc(v.name)}<div class="fs-6 fw-normal text-muted">${esc(f.name)}</div>` : esc(f.name);
+        $('ingredients').innerHTML = f.ings.map((i, k) =>
+          `<span class="badge bg-light text-dark me-1 mb-1 p-2">${esc(v && v.ings ? v.ings[k] : i.name)}${i.measure ? ' · ' + esc(i.measure) : ''}</span>`).join('');
+        $('recipe').innerHTML = (note ? `<p class="small text-muted mb-2">${note}</p>` : '') +
+          '<ol class="mb-0 ps-3">' + (v ? v.steps : steps).map(s => `<li class="mb-2">${withTimers(s)}</li>`).join('') + '</ol>';
+      };
+      foodDetail.classList.remove('hidden');
+      render(null, '⏳ Đang dịch sang tiếng Việt...');
+      loadVideos(f, f.name);
+      if (!f.vi) { try { f.vi = await translateMeal(f, steps); } catch (e) { f.vi = null; } }
+      if (currentFood !== f) return;
+      render(f.vi, f.vi ? '🌐 Bản dịch tự động, có thể chưa chính xác. Bấm vào thời gian ⏱ để đếm ngược.' : '⚠️ Không dịch được, đang hiện bản gốc tiếng Anh. Bấm vào thời gian ⏱ để đếm ngược.');
+      if (f.vi) loadVideos(f, f.vi.name);
+    }
+
+    // ---- Tìm kiếm ----
+    Object.assign(VN, { 'cơm': 'rice', 'mì': 'noodle', 'canh': 'soup', 'cà ri': 'curry', 'bánh mì': 'bread', 'cừu': 'lamb', 'hải sản': 'seafood', 'sườn': 'ribs', 'xúc xích': 'sausage', 'phô mai': 'cheese', 'bánh': 'cake' });
+    let searchList = [];
+
+    async function searchMeals(term) {
+      let meals = (await get('search.php?s=' + encodeURIComponent(term))).meals || [];
+      if (!meals.length) { // không có món tên đó -> thử tìm theo nguyên liệu
+        const list = (await get('filter.php?i=' + encodeURIComponent(term.replace(/ /g, '_')))).meals || [];
+        meals = (await Promise.all(list.slice(0, 12).map(m => get('lookup.php?i=' + m.idMeal)))).map(d => d.meals && d.meals[0]).filter(Boolean);
+      }
+      return meals.map(parse);
+    }
+
+    $('searchForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const raw = $('searchInput').value.trim().toLowerCase();
+      if (!raw) return;
+      const term = VN[raw] || raw;
+      const box = $('searchResults');
+      box.classList.remove('hidden');
+      box.innerHTML = '<div class="bg-white rounded-4 p-3 text-center text-muted">⏳ Đang tìm...</div>';
+      try {
+        const rules = getRules();
+        const all = await searchMeals(term);
+        searchList = all.filter(m => !violations(m, rules).length);
+        const hidden = all.length - searchList.length;
+        if (!searchList.length) {
+          box.innerHTML = `<div class="bg-white rounded-4 p-3 text-center text-muted">😢 ${all.length ? `Có ${all.length} món nhưng đều vi phạm bộ lọc của bạn.` : `Không thấy món nào cho “${esc(raw)}”. Thử từ tiếng Anh như chicken, beef, rice.`}</div>`;
+          return;
+        }
+        box.innerHTML = '<div class="bg-white rounded-4 p-3"><div class="row g-2">' + searchList.map((m, i) =>
+          `<div class="col-6 col-md-4"><button type="button" class="btn p-0 border-0 text-start w-100 result-item" data-i="${i}">
+             <img src="${esc(m.img)}/preview" alt="" class="img-fluid rounded-3 w-100" style="aspect-ratio:1;object-fit:cover" loading="lazy">
+             <div class="small fw-semibold mt-1">${esc(m.name)}</div></button></div>`).join('') +
+          `</div>${hidden ? `<p class="small text-muted mb-0 mt-2">Đã ẩn ${hidden} món không hợp với bộ lọc của bạn.</p>` : ''}</div>`;
+      } catch (err) {
+        box.innerHTML = '<div class="bg-white rounded-4 p-3 text-center text-muted">⚠️ Không kết nối được tới API. Kiểm tra mạng rồi thử lại nhé.</div>';
+      }
+    });
+
+    $('searchResults').addEventListener('click', e => {
+      const b = e.target.closest('.result-item');
+      if (!b) return;
+      showFood(searchList[+b.dataset.i]);
+      foodCard.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    randomBtn.addEventListener('click', async () => {
+      randomBtn.disabled = true;
+      randomBtn.textContent = '⏳ Đang tìm món...';
+      msg('⏳ Đang tìm món phù hợp với bạn...');
+      try {
+        const meal = await findMeal();
+        if (meal) showFood(meal);
+        else msg('😢 Không tìm thấy món nào phù hợp. Hãy bỏ bớt một vài bộ lọc rồi thử lại nhé!');
+      } catch (e) {
+        msg('⚠️ Không kết nối được tới API. Kiểm tra mạng rồi thử lại nhé.');
+      }
+      randomBtn.disabled = false;
+      randomBtn.textContent = '🔀 Random món ăn';
+    });
+
+    foodCard.addEventListener('click', () => {
+      if (currentFood) {
+        showDetail(currentFood);
+        foodDetail.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  </script>
+</body>
+</html>
